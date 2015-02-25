@@ -21,7 +21,7 @@ def get_data(fo,md,soup, direction, old_data_handler):
 
 def on_old_data(deal_data, direction):
     for row in deal_data:
-        row.insert(12,modify_data(direction))  #bug here, only the Ag deal direction was added. 
+        row.insert(12,modify_data(direction))  #bug, only the Ag(T+D) deal direction was added. 
 #============End function==============
         
 def modify_data(value):
@@ -46,17 +46,16 @@ for i in range(1, 113,1):  #113
   for tIndex in subIndex:
     subPage = urllib.request.urlopen('http://www.sge.com.cn/xqzx/mrxq/' + tIndex).read().decode()
     soup = BeautifulSoup(subPage)
-    md = re.findall('\d{4}-\d{2}-\d{2}',soup.find(class_="tit_bottom").text)[0]
+    deal_date = re.findall('\d{4}-\d{2}-\d{2}',soup.find(class_="tit_bottom").text)[0]
     direction = re.findall('(?:Ag\(T\+D\)--</b><b>|Ag\(T\+D\)--|Ag\(T\+D\).*?>.*?>.*?>.*?>)(...)',subPage)
+    on_old_action = None
     if len(direction)>0:
         direction = direction[0]
+        on_old_action = on_old_data
     else:
-        direction=''
-    print(md,end='\n\n')
-    if datetime.datetime.strptime(md, '%Y-%m-%d')< datetime.datetime(2014,9,5):
-        get_data(fo,md,soup,direction,on_old_data)
-    else:
-        get_data(fo,md,soup, None, None)
+        direction=None
+    print(deal_date,end='\n\n')
+    get_data(fo,deal_date,soup,direction,on_old_data)
 fo.close()
 print('end')
 
